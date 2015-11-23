@@ -1,39 +1,34 @@
-name: ${project.name}
-version: ${project.version}
-description: ${project.description}
-author: SainttX
+# Banknotes by SainttX
+# WARNING: If your users have notes and you modify this,
+#          their notes will be invalid and not registered by the plugin anymore
+note:
+  material: PAPER
+  data: 0
+  name: "&lBanknote"
+  lore:
+  - "$[money]"
+  - "Withdrawn by [player]"
 
-main: com.sainttx.banknotes.BanknotePlugin
-depend: [ Vault ]
+messages:
+  insufficient-funds: "You do not have enough money to withdraw this amount"
+  insufficient-permissions: "You do not have enough permissions"
+  inventory-full: "Please have a space open in your inventory to create a banknote"
+  invalid-note: "This banknote is invalid! It has been removed from your inventory"
+  invalid-number: "You provided an invalid number"
+  note-created: "You created a note for $[money]"
+  note-given: "You gave a note for $[money] to [player]"
+  note-received: "You were given a note for $[money] by [player]"
+  note-redeemed: "Banknote for $[money] has been redeemed"
+  nothing-in-hand: "There is nothing in your hand for you to redeem"
+  less-than-minimum: "The amount you entered is less than the minimum allowed amount of $[money]"
+  more-than-maximum: "The amount you entered is more than the maximum allowed amount of $[money]"
+  reloaded: "The Banknotes config.yml has been reloaded"
+  target-not-found: "Couldn't find a player with that name"
 
-commands:
-  withdraw:
-    description: Withdraw money as a note
-    usage: |
-           Withdraw money from your bank account as a note.
-           /<command> [amount]
-  deposit:
-    description: Deposit a note
-  banknotes:
-    description: Reload the Banknotes plugin
-    aliases: [ banknote, bn, notes, note ]
-    usage: |
-           Reload the plugin or give banknotes to players.
-           /<command> <reload|give <player> <amount>>
-
-permissions:
-  banknotes.*:
-    description: Gives access to all Banknotes commands
-    children:
-      banknotes.withdraw: true
-      banknotes.deposit: true
-      banknotes.reload: true
-  banknotes.withdraw:
-    description: Allows you to withdraw banknotes
-    default: true
-  banknotes.deposit:
-    description: Allows you to deposit banknotes
-    default: true
-  banknotes.reload:
-    description: Allows you to reload the plugin
-    default: op
+settings:
+  console-name: "&3&lThe&fServer"
+  minimum-float-amount: 0
+  maximum-float-amount: 2
+  minimum-withdraw-amount: 10.0
+  maximum-withdraw-amount: 5000.0
+  allow-right-click-to-deposit-notes: true
