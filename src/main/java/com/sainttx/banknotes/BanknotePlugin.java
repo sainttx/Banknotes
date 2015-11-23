@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
  */
 public class BanknotePlugin extends JavaPlugin {
 
+
+    private BanknotePlugin plugin;  {this.plugin = plugin;}
     /*
      * The base item
      */
@@ -90,8 +92,12 @@ public class BanknotePlugin extends JavaPlugin {
      */
     public String formatDouble(double value) {
         NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
-        nf.setMaximumFractionDigits(2);
-        nf.setMinimumFractionDigits(2);
+        //Allows float value at end to have 0-2 decimals by default, so $1,000 doesn't look like $1,000.00
+        int max = getConfig().getInt("settings.maximum-float-amount");
+        int min = getConfig().getInt("settings.minimum-float-amount");
+
+        nf.setMaximumFractionDigits(max);
+        nf.setMinimumFractionDigits(min);
         return nf.format(value);
     }
 
@@ -137,7 +143,17 @@ public class BanknotePlugin extends JavaPlugin {
 
         // Format the base lore
         for (String baseLore : this.baseLore) {
-            formatLore.add(colorMessage(baseLore.replace("[money]", formatDouble(amount)).replace("[player]", creatorName)));
+            if (creatorName == "CONSOLE") {
+                /* Ignore the next line, for personal use/replacing with config method.
+                //formatLore.add(colorMessage(baseLore.replace("[money]", formatDouble(amount)).replace("[player]", ChatColor.DARK_AQUA + "TDK" + ChatColor.WHITE + "Network")));
+                */
+
+                //Grabs console name so the note doesn't just say "CONSOLE" if console hands out note.
+                creatorName = getConfig().getString("settings.console-name");
+                formatLore.add(colorMessage(baseLore.replace("[money]", formatDouble(amount)).replace("[player]", creatorName)));
+            } else {
+                formatLore.add(colorMessage(baseLore.replace("[money]", formatDouble(amount)).replace("[player]", creatorName)));
+            }
         }
 
         // Add the base lore to the item
