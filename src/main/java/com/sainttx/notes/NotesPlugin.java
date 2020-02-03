@@ -6,8 +6,11 @@ import com.sainttx.notes.command.WithdrawCommand;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -34,6 +37,11 @@ public class NotesPlugin extends JavaPlugin {
     private List<String> baseLore;
 
     /*
+     * Key representing amount of money in the item
+     */
+    private NamespacedKey amountKey;
+
+    /*
      * Vault economy implementation
      */
     private Economy economy;
@@ -53,6 +61,8 @@ public class NotesPlugin extends JavaPlugin {
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));
         getCommand("deposit").setExecutor(new DepositCommand(this));
         getCommand("banknotes").setExecutor(new BanknotesCommand(this));
+
+        amountKey = new NamespacedKey(this, "amount");
 
         // Load economy a tick later
         getServer().getScheduler().runTask(this, new Runnable() {
@@ -165,6 +175,9 @@ public class NotesPlugin extends JavaPlugin {
         ItemStack ret = base.clone();
         ItemMeta meta = ret.getItemMeta();
         meta.setLore(formatLore);
+
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        container.set(amountKey, PersistentDataType.DOUBLE, amount);
         ret.setItemMeta(meta);
 
         return ret;
@@ -177,6 +190,20 @@ public class NotesPlugin extends JavaPlugin {
      * @return True if the item represents a note, false otherwise
      */
     public boolean isBanknote(ItemStack itemstack) {
+        if (itemstack.hasItemMeta() && itemstack.getItemMeta().getPersistentDataContainer().has(amountKey, PersistentDataType.DOUBLE)) {
+            return true;
+        }
+        return isBanknoteLegacy(itemstack);
+    }
+
+    /**
+     * Returns whether an ItemStack is a legacy banknote
+     *
+     * @param itemstack The item that may or may not be a note
+     * @return True if the item represents a legacy note, false otherwise
+     */
+    @Deprecated
+    public boolean isBanknoteLegacy(ItemStack itemstack) {
         if (itemstack.getType() == base.getType() && itemstack.getDurability() == base.getDurability()
                 && itemstack.getItemMeta().hasDisplayName() && itemstack.getItemMeta().hasLore()) {
             String display = itemstack.getItemMeta().getDisplayName();
@@ -196,6 +223,24 @@ public class NotesPlugin extends JavaPlugin {
      * item isn't a note
      */
     public double getBanknoteAmount(ItemStack itemstack) {
+        if (itemstack.hasItemMeta()) {
+            PersistentDataContainer container = itemstack.getItemMeta().getPersistentDataContainer();
+            if (container.has(amountKey, PersistentDataType.DOUBLE)) {
+                return container.get(amountKey, PersistentDataType.DOUBLE);
+            }
+        }
+        return getBanknoteAmountLegacy(itemstack);
+    }
+
+    /**
+     * Returns the amount of money that the banknote holds using legacy storage method
+     *
+     * @param itemstack The banknote
+     * @return The amount of money that the note holds, 0 if the
+     * item isn't a legacy note
+     */
+    @Deprecated
+    public double getBanknoteAmountLegacy(ItemStack itemstack) {
         if (itemstack.getItemMeta().hasDisplayName() && itemstack.getItemMeta().hasLore()) {
             String display = itemstack.getItemMeta().getDisplayName();
             List<String> lore = itemstack.getItemMeta().getLore();
