@@ -5,6 +5,7 @@ author: SainttX
 
 main: com.sainttx.notes.NotesPlugin
 depend: [ Vault ]
+api-version: "1.15"
 
 commands:
   withdraw:
